@@ -1,0 +1,176 @@
+#+TITLE: My Doom Config
+
+* TODO Introduction :aesthetic:
+This page holds all the special configuration for my emacs setup.  When I run 'doom sync' the code blocks in this file all get tangled into ~config.el~.
+
+The configuration is a simple setup for ii work, related to kubernetes testing, devops, web development, and work with postgres databases.
+
+ii's work involves heavy use of org-files, and so additional work is done to ensure org works well with the above domains.
+
+This config file is organized around:
+- aesthetic :: making emacs look good
+- ergonomics  :: making it feel good
+- language support :: making it work with our languages of choice
+- literate org integration :: making it all a nice tangle.
+
+* Preliminary Step: the init.el
+doom comes loaded with a number of optional modules that you can uncomment to load.
+I use the following...
+** completion
+- company :: the ultimate code completion backend
+- ivy     :: a search engine for love and life
+** ui
+- deft              :: notational velocity for Emacs
+- doom              :: what makes DOOM look the way it does
+- doom-dashboard    :: a nifty splash screen for Emacs
+- doom-quit         :: DOOM quit-message prompts when you quit Emacs
+- hl-todo           :: highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
+- modeline          :: snazzy, Atom-inspired modeline, plus API
+- ophints           :: highlight the region an operation acts on
+- (popup +defaults) :: tame sudden yet inevitable temporary windows
+- treemacs          :: a project drawer, like neotree but cooler
+- unicode           :: extended unicode support for various languages
+- vc-gutter         :: vcs diff in the fringe
+- vi-tilde-fringe   :: fringe tildes to mark beyond EOB
+- window-select     :: visually switch windows
+- workspaces        :: tab emulation, persistence & separate workspaces
+- zen               :: distraction-free coding or writing
+** editor
+- (evil +everywhere):: come to the dark side, we have cookies
+- file-templates    :: auto-snippets for empty files
+- fold              :: (nigh) universal code folding
+- (format +onsave)  :: automated prettiness
+- snippets          :: my elves. They type so I don't have to
+- word-wrap         :: soft wrapping with language-aware indent
+** emacs
+- dired             :: making dired pretty [functional]
+- electric          :: smarter, keyword-based electric-indent
+- ibuffer           :: interactive buffer management
+- undo              :: persistent, smarter undo for your inevitable mistakes
+- vc                :: version-control and Emacs, sitting in a tree
+** term
+- vterm             :: the best terminal emulation in Emacs
+** checkers
+- syntax              :: tasing you for every semicolon you forget
+** tools
+- direnv
+- docker
+- (eval +overlay)     :: run code, run (also, repls)
+- lookup              :: navigate your code and its documentation
+- lsp
+- magit             :: a git porcelain for Emacs
+- pass              :: password manager for nerds
+- pdf               :: pdf enhancements
+- rgb               :: creating color strings
+- terraform         :: infrastructure as code
+- tmux              :: an API for interacting with tmux
+- upload            :: map local to remote projects via ssh/ftp
+** os
+- tty               :: improve the terminal Emacs experience
+** lang
+- clojure           :: java with a lisp
+- emacs-lisp        :: drown in parentheses
+- (go +lsp)         :: the hipster dialect
+- json              :: At least it ain't XML
+- javascript        :: all(hope(abandon(ye(who(enter(here))))))
+- markdown          :: writing docs for people to ignore
+- (org +roam)              :: organize your plain life in plain text
+- python            :: beautiful is better than ugly
+- sh                :: she sells {ba,z,fi}sh shells on the C xor
+- web               :: the tubes
+- yaml              :: JSON, but readable
+** app
+- calendar
+irc                :: how neckbeards socialize
+** config
+- literate
+- (default +bindings +smartparens))
+* Aesthetic
+** Personalize it
+#+BEGIN_SRC elisp
+(setq user-full-name "Zach Mandeville"
+      user-mail-address "zz@ii.coop")
+#+END_SRC
+** Setup nice fonts
+ Doom exposes five (optional) variables for controlling fonts in Doom. Here are the three important ones:
+ + `doom-font'
+ + `doom-variable-pitch-font'
+ + `doom-big-font' -- used for `doom-big-font-mode' (use this for presentations or streaming.)
+
+I like using the IBM Plex series throughout, which you'd need to have installed on your computer.  You can download the fonts from [[https://github.com/IBM/plex][their github repo]]
+
+#+NAME: Bring in IBM Plex
+#+BEGIN_SRC elisp
+ (setq doom-font (font-spec :family "IBM Plex Mono" :size 12 :weight 'semi-light)
+       doom-variable-pitch-font (font-spec :family "IBM Plex Serif" :size 13)
+       doom-big-font (font-spec :family "IBM Plex Serif" :size 26))
+#+END_SRC
+** Set default theme
+I like nord-light, but it doesn't work the best for terminal-based emacs, which I will need to use.
+dracula+ looks okay for both versions...set dracula as the default,a dn then just switch over to that good nord.
+
+#+NAME: Set Default Theme
+#+BEGIN_SRC elisp
+(setq doom-theme 'doom-dracula)
+#+END_SRC
+
+** Display line Numbers by Default
+#+BEGIN_SRC elisp
+(setq display-line-numbers-type t)
+#+END_SRC
+** vterm displays to the right
+the default is at the bottom, but i've been liking a slim right drawer.  may change in the future!
+#+BEGIN_SRC elisp
+(after! vterm
+  (set-popup-rule! "*doom:vterm-popup:main" :size 0.35 :vslot -4 :select t :quit nil :ttl 0 :side 'right))
+#+END_SRC
+* Ergonomics
+** Remap Local Leader
+This is going after the spacemacs config, where it's set to ~,~.  I got used to this, and bringing it to here.
+#+NAME: Remap Local Leader
+#+BEGIN_SRC elisp
+(setq doom-localleader-key ",")
+#+END_SRC
+* Language Helpers
+** Postgres
+*** add psql and postgres to path
+for some reason, sometimes doom can't find the postgres binary so we have to make sure it's added to the emacs path
+#+BEGIN_SRC elisp
+ (add-to-list 'exec-path "/Library/PostgreSQL/12/bin/")
+ (setenv "PATH" (mapconcat 'identity exec-path ":"))
+#+END_SRC
+* Literate Helpers
+** Set Org Directory
+This is default, and not sure if i need to include it, but it's in the default config.el so I figured I should!
+#+NAME: set Org Directory
+#+BEGIN_SRC elisp
+(setq org-directory "~/org/")
+#+END_SRC
+
+** Setup Org Roam
+I use this to capture notes onw ork throughout the day and build up my body of knowledge.
+I am not sure how well this would work for a shared config, and so if you are using this yrself you may wanna detangle this
+#+NAME: Setup Org Roam
+#+BEGIN_SRC elisp
+(setq org-roam-directory "~/roam")
+(require 'company-org-roam)
+(use-package company-org-roam
+  :when (featurep! :completion company)
+  :after org-roam
+  :config
+  (set-company-backend! 'org-mode '(company-org-roam company-yasnippet company-dabbrev)))
+#+END_SRC
+** Set up Org Journal
+#+NAME: Org Journal
+#+BEGIN_SRC elisp
+(use-package org-journal
+      :bind
+      ("C-c n j" . org-journal-new-entry)
+      :custom
+      (org-journal-dir "~/roam")
+      (org-journal-date-prefix "#+TITLE: ")
+      (org-journal-file-format "%Y-%m-%d.org")
+      (org-journal-date-format "%A, %d %B %Y"))
+    (setq org-journal-enable-agenda-integration t)
+
+#+END_SRC
